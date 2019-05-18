@@ -259,7 +259,7 @@ class CaseRefExtractorMixin(object):
             marker = RefMarker(text=file_number,
                                start=match.start(0),
                                end=match.end(0),
-                               section =0,  # TODO setion number
+                               section =0,  # TODO section number
                                line=0)  # TODO line number
             marker.set_uuid()
             marker.set_references(ref_ids)
