@@ -215,7 +215,11 @@ class CaseRefExtractorMixin(object):
         # TODO More intelligent by search only in sentences.
 
         # Find all file numbers
-        for match in re.finditer(self.get_file_number_regex(), content):  # type: Match
+        soup = BeautifulSoup(content, 'html.parser')
+        
+        for match in soupre.finditer(self.get_file_number_regex(), content):  # type: Match
+        
+        ##for match in re.finditer(self.get_file_number_regex(), content):  # type: Match
             court = None
 
             # Search in surroundings for court names
