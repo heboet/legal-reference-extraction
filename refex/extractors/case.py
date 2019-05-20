@@ -3,6 +3,7 @@ import logging
 import os
 import re
 from typing import List, Set, Match
+from bs4 import BeautifulSoup
 
 from refex.models import RefMarker, Ref, RefType
 
@@ -250,11 +251,19 @@ class CaseRefExtractorMixin(object):
 
             if court is None:
                 court = ''
-
+            
+            # TODO get section number
+            
+           ## section = content.find_previous(class_="urteil_rz_zahl").text
+            
+            
             file_number = match.group(0)
             ref_ids = [
                 Ref(ref_type=RefType.CASE, court=court, file_number=file_number)  # TODO date field
             ]
+            
+            
+         
             # TODO maintain order for case+law refs
             marker = RefMarker(text=file_number,
                                start=match.start(0),
