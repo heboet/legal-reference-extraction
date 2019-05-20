@@ -217,71 +217,72 @@ class CaseRefExtractorMixin(object):
         # Find all file numbers
         soup = BeautifulSoup(content, 'html.parser')
         
-        for match in soupre.finditer(self.get_file_number_regex(), content):  # type: Match
-        
-        ##for match in re.finditer(self.get_file_number_regex(), content):  # type: Match
-            court = None
+        for elem in soup:
+                
+            for match in re.finditer(self.get_file_number_regex(), elem):  # type: Match
+                court = None
 
-            # Search in surroundings for court names
-            for diff in [100, 200, 500]:
-                # TODO maybe search left first, then to the right
+                # Search in surroundings for court names
+                for diff in [100, 200, 500]:
+                    # TODO maybe search left first, then to the right
 
-                start = max(0, match.start(0) - diff)
-                end = min(len(content), match.end(0) + diff)
-                surrounding = content[start:end]
+                    start = max(0, match.start(0) - diff)
+                    end = min(len(content), match.end(0) + diff)
+                    surrounding = content[start:end]
 
-                # print('Surroundings: %s'  % content[start:end])
+                    # print('Surroundings: %s'  % content[start:end])
 
-                # File number position in surroundings
-                fn_pos = match.start(0) - start
-                candidates = collections.OrderedDict()
+                    # File number position in surroundings
+                    fn_pos = match.start(0) - start
+                    candidates = collections.OrderedDict()
 
-                for court_match in re.finditer(self.get_court_name_regex(), surrounding):
-                    candidate_pos = round((court_match.start(0) + court_match.end(0)) / 2)  # Position = center
-                    candidate_dist = abs(fn_pos - candidate_pos)  # Distance to file number
+                    for court_match in re.finditer(self.get_court_name_regex(), surrounding):
+                        candidate_pos = round((court_match.start(0) + court_match.end(0)) / 2)  # Position = center
+                        candidate_dist = abs(fn_pos - candidate_pos)  # Distance to file number
 
-                    # print('-- Candidate: %s / pos: %i / dist: %i' % (court_match.group(0), candidate_pos, candidate_dist))
+                        # print('-- Candidate: %s / pos: %i / dist: %i' % (court_match.group(0), candidate_pos, candidate_dist))
 
-                    if candidate_dist not in candidates:
-                        candidates[candidate_dist] = court_match
-                    else:
-                        logger.warning('Court candidate with same distance exist already: %s' % court_match)
+                        if candidate_dist not in candidates:
+                            candidates[candidate_dist] = court_match
+                        else:
+                            logger.warning('Court candidate with same distance exist already: %s' % court_match)
 
-                # Court is the candidate with smallest distance to file number
-                if len(candidates) > 0:
-                    court = next(iter(candidates.values())).group('court')
-                    # Stop searching if court was found with this range
-                    break
+                    # Court is the candidate with smallest distance to file number
+                    if len(candidates) > 0:
+                        court = next(iter(candidates.values())).group('court')
+                        # Stop searching if court was found with this range
+                        break
 
-            if court is None:
-                court = ''
+                if court is None:
+                    court = ''
             
-            # TODO get section number
-            
-           ## section = content.find_previous(class_="urteil_rz_zahl").text
-            
-            
-            file_number = match.group(0)
-            ref_ids = [
-                Ref(ref_type=RefType.CASE, court=court, file_number=file_number)  # TODO date field
-            ]
-            
-            
-         
-            # TODO maintain order for case+law refs
-            marker = RefMarker(text=file_number,
-                               start=match.start(0),
-                               end=match.end(0),
-                               section =0,  # TODO section number
-                               line=0)  # TODO line number
-            marker.set_uuid()
-            marker.set_references(ref_ids)
+                # TODO get section number
 
-            refs.append(
-                marker
-            )
+                section = elem.find_previous("a")
+                section = section.string
 
-            # print(match.start(0))
+
+                file_number = match.group(0)
+                ref_ids = [
+                    Ref(ref_type=RefType.CASE, court=court, file_number=file_number)  # TODO date field
+                ]
+
+
+
+                # TODO maintain order for case+law refs
+                marker = RefMarker(text=file_number,
+                                   start=match.start(0),
+                                   end=match.end(0),
+                                   section =0,  # TODO section number
+                                   line=0)  # TODO line number
+                marker.set_uuid()
+                marker.set_references(ref_ids)
+
+                refs.append(
+                    marker
+                )
+
+                # print(match.start(0))
 
         return refs
 
